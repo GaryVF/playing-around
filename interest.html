@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>enroute.io Interest Dashboard</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="interest-styles.css">
+</head>
+<body>
+    <nav class="interest-nav">
+        <div class="nav-logo">
+            <a href="index.html">
+                <span class="logo-text">enroute<span class="accent">.io</span></span>
+            </a>
+            <span class="nav-divider">/</span>
+            <span class="dashboard-title">Interest Dashboard</span>
+        </div>
+        <div class="nav-controls">
+            <button id="refreshData" class="refresh-btn">
+                <span class="refresh-icon">↻</span> Refresh Data
+            </button>
+        </div>
+    </nav>
+
+    <main class="dashboard-container">
+        <div class="submissions-overview">
+            <div class="metric-card total-submissions">
+                <h3>Total Submissions</h3>
+                <div class="metric-value" id="totalSubmissions">0</div>
+                <div class="metric-trend positive">
+                    <span class="trend-arrow">↑</span>
+                    <span class="trend-value" id="submissionTrend">0%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="submissions-list">
+            <div class="list-header">
+                <h2>Recent Submissions</h2>
+                <div class="list-controls">
+                    <input type="text" id="searchInput" placeholder="Search submissions..." class="search-input">
+                    <select id="statusFilter" class="status-filter">
+                        <option value="all">All Status</option>
+                        <option value="new">New</option>
+                        <option value="contacted">Contacted</option>
+                        <option value="closed">Closed</option>
+                    </select>
+                </div>
+            </div>
+            <div class="submissions-grid" id="submissionsGrid">
+                <!-- Submissions will be populated here -->
+            </div>
+        </div>
+
+        <div class="submission-details" id="submissionDetails">
+            <div class="details-header">
+                <h3>Submission Details</h3>
+                <button class="close-details">×</button>
+            </div>
+            <div class="details-content">
+                <!-- Details will be populated here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Custom JS -->
+    <script src="interest.js"></script>
+</body>
+</html> 

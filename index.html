@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>enroute.io - Intelligent Route Planning</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Map Background -->
+    <div id="map" class="map-background"></div>
+    <div class="overlay"></div>
+    
+    <!-- Header -->
+    <header class="main-header">
+        <nav class="nav-container">
+            <div class="logo">
+                <span class="logo-text">enroute<span class="accent">.io</span></span>
+            </div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#contact">Contact</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    <span class="gradient-text">Intelligent</span>
+                    <span class="block">Route Planning</span>
+                </h1>
+                <p class="hero-subtitle">Transform your delivery operations with AI-powered optimization</p>
+                <div class="cta-buttons">
+                    <button class="cta-primary">Get Started</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="features-section">
+            <div class="section-container">
+                <h2 class="section-title">Key Features</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🚀</div>
+                        <h3>Smart Routing</h3>
+                        <p>AI-powered route optimization</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <h3>Analytics</h3>
+                        <p>Real-time delivery insights</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔄</div>
+                        <h3>Live Updates</h3>
+                        <p>Dynamic route adjustments</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials Section -->
+        <section id="testimonials" class="testimonials-section">
+            <div class="section-container">
+                <h2 class="section-title">What Our Clients Say</h2>
+                <div class="testimonials-grid">
+                    <div class="testimonial-card">
+                        <div class="testimonial-content">
+                            <div class="quote-icon">"</div>
+                            <p class="testimonial-text">Enroute.io transformed our delivery operations. We've seen a 40% increase in efficiency since implementation.</p>
+                            <div class="testimonial-author">
+                                <div class="author-info">
+                                    <h4>Sarah Chen</h4>
+                                    <p>Operations Director, FastTrack Logistics</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="testimonial-card">
+                        <div class="testimonial-content">
+                            <div class="quote-icon">"</div>
+                            <p class="testimonial-text">The AI-powered routing has significantly reduced our fuel costs and improved delivery times.</p>
+                            <div class="testimonial-author">
+                                <div class="author-info">
+                                    <h4>Michael Rodriguez</h4>
+                                    <p>CEO, Express Delivery Co.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="testimonial-card">
+                        <div class="testimonial-content">
+                            <div class="quote-icon">"</div>
+                            <p class="testimonial-text">Real-time analytics and route optimization have revolutionized how we manage our fleet.</p>
+                            <div class="testimonial-author">
+                                <div class="author-info">
+                                    <h4>Emma Thompson</h4>
+                                    <p>Fleet Manager, Global Transit</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="contact-section">
+            <div class="section-container">
+                <div class="contact-content">
+                    <h2 class="section-title">Contact Us</h2>
+                    <div class="headquarters-info">
+                        <h3>Headquarters</h3>
+                        <address>
+                            1234 Industrial Drive<br>
+                            Gary, Indiana 46402<br>
+                            United States
+                        </address>
+                        <div class="company-quote">
+                            <blockquote>
+                                "Dissent is the highest form of patriotism"
+                            </blockquote>
+                            <cite>- Anthony Cafaro</cite>
+                        </div>
+                    </div>
+                    <form id="contactForm" class="contact-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <input type="text" id="name" name="name" required placeholder="Your Name">
+                            </div>
+                            <div class="form-group">
+                                <input type="email" id="email" name="email" required placeholder="Your Email">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="subject" name="subject" required placeholder="Subject">
+                        </div>
+                        <div class="form-group">
+                            <textarea id="message" name="message" required placeholder="Your Message"></textarea>
+                        </div>
+                        <button type="submit" class="submit-button">
+                            <span class="button-text">Send Message</span>
+                            <span class="button-icon">→</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Dashboard Buttons -->
+    <div class="dashboard-buttons">
+        <a href="analytics.html" class="dashboard-toggle">
+            <span class="toggle-icon">📊</span>
+            <span class="toggle-text">Analytics</span>
+        </a>
+        <a href="interest.html" class="dashboard-toggle">
+            <span class="toggle-icon">📈</span>
+            <span class="toggle-text">Interest</span>
+        </a>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="script.js"></script>
+</body>
+</html> 
