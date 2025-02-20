@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/admin.css">
+</head>
+<body>
+    <div id="loginContainer" class="login-container">
+        <form id="loginForm" class="login-form">
+            <h2>Admin Login</h2>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit" class="btn-primary">Login</button>
+        </form>
+    </div>
+
+    <div id="dashboardContainer" class="dashboard-container" style="display: none;">
+        <nav class="admin-nav">
+            <div class="nav-logo">
+                <span class="logo-text">Analytics Dashboard</span>
+            </div>
+            <button id="logoutBtn" class="btn-secondary">Logout</button>
+        </nav>
+
+        <div class="dashboard-content">
+            <section class="metrics-overview">
+                <div class="metric-card">
+                    <h3>Active Sessions</h3>
+                    <p id="activeSessions" class="metric-value">0</p>
+                </div>
+                <div class="metric-card">
+                    <h3>Total Interactions</h3>
+                    <p id="totalInteractions" class="metric-value">0</p>
+                </div>
+                <div class="metric-card">
+                    <h3>Form Submissions</h3>
+                    <p id="formSubmissions" class="metric-value">0</p>
+                </div>
+                <div class="metric-card">
+                    <h3>Error Rate</h3>
+                    <p id="errorRate" class="metric-value">0%</p>
+                </div>
+            </section>
+
+            <section class="data-section">
+                <div class="section-header">
+                    <h2>Recent Sessions</h2>
+                    <div class="controls">
+                        <select id="sessionFilter">
+                            <option value="all">All Sessions</option>
+                            <option value="active">Active</option>
+                            <option value="ended">Ended</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="sessionsTable" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Session ID</th>
+                                <th>Start Time</th>
+                                <th>Platform</th>
+                                <th>Browser</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="data-section">
+                <div class="section-header">
+                    <h2>User Interactions</h2>
+                    <div class="controls">
+                        <select id="interactionFilter">
+                            <option value="all">All Types</option>
+                            <option value="click">Clicks</option>
+                            <option value="form">Forms</option>
+                            <option value="navigation">Navigation</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="interactionsTable" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Type</th>
+                                <th>Element</th>
+                                <th>Page URL</th>
+                                <th>Session ID</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="data-section">
+                <div class="section-header">
+                    <h2>Error Logs</h2>
+                    <div class="controls">
+                        <select id="errorFilter">
+                            <option value="all">All Errors</option>
+                            <option value="client">Client Errors</option>
+                            <option value="server">Server Errors</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="errorsTable" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Type</th>
+                                <th>Message</th>
+                                <th>Page URL</th>
+                                <th>Session ID</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Session Details Modal -->
+    <div id="sessionDetailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Session Details</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="details-section">
+                    <h3>Session Information</h3>
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <label>Session ID:</label>
+                            <span id="detailSessionId"></span>
+                        </div>
+                        <div class="detail-item">
+                            <label>Start Time:</label>
+                            <span id="detailStartTime"></span>
+                        </div>
+                        <div class="detail-item">
+                            <label>Platform:</label>
+                            <span id="detailPlatform"></span>
+                        </div>
+                        <div class="detail-item">
+                            <label>Browser:</label>
+                            <span id="detailBrowser"></span>
+                        </div>
+                        <div class="detail-item">
+                            <label>Status:</label>
+                            <span id="detailStatus"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="details-section">
+                    <h3>User Interactions</h3>
+                    <div class="table-container">
+                        <table class="data-table" id="sessionInteractionsTable">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Type</th>
+                                    <th>Element</th>
+                                    <th>Page URL</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="details-section">
+                    <h3>Error Logs</h3>
+                    <div class="table-container">
+                        <table class="data-table" id="sessionErrorsTable">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Type</th>
+                                    <th>Message</th>
+                                    <th>Page URL</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom JS -->
+    <script src="/admin.js"></script>
+</body>
+</html> 

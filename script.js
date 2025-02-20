@@ -1,14 +1,88 @@
+// Global variables
+let mapInstance = null;
+let loadingScreen = null;
+let isInitialized = false;
+
+// Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
-    // Add loading state to body
-    document.body.classList.add('loading');
+    initializeApp();
+});
+
+function initializeApp() {
+    // Prevent multiple initializations
+    if (isInitialized) {
+        console.warn('Application already initialized');
+        return;
+    }
+
+    // Create and setup loading screen first
+    setupLoadingScreen();
 
     // Initialize loading sequence
-    let loadingTasks = [
-        // Simulate map loading
-        new Promise(resolve => setTimeout(resolve, 1500)),
-        // Load map tiles
-        new Promise(resolve => {
-            const map = L.map('map', {
+    const loadingTasks = [
+        new Promise(resolve => setTimeout(resolve, 1500))
+    ];
+
+    // Initialize map if container exists
+    const mapContainer = document.getElementById('map');
+    if (mapContainer) {
+        loadingTasks.push(initializeMap(mapContainer));
+    }
+
+    // Execute all loading tasks
+    Promise.all(loadingTasks)
+        .then(finishLoading)
+        .catch(handleLoadingError);
+
+    isInitialized = true;
+}
+
+function setupLoadingScreen() {
+    // Remove any existing loading screen
+    const existingScreen = document.querySelector('.loading-screen');
+    if (existingScreen) {
+        existingScreen.parentNode.removeChild(existingScreen);
+    }
+
+    // Create new loading screen
+    loadingScreen = document.createElement('div');
+    loadingScreen.className = 'loading-screen';
+    loadingScreen.style.position = 'fixed';
+    loadingScreen.style.top = '0';
+    loadingScreen.style.left = '0';
+    loadingScreen.style.width = '100%';
+    loadingScreen.style.height = '100%';
+    loadingScreen.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+    loadingScreen.style.zIndex = '9999';
+    loadingScreen.style.transition = 'opacity 0.5s ease';
+    loadingScreen.style.display = 'flex';
+    loadingScreen.style.justifyContent = 'center';
+    loadingScreen.style.alignItems = 'center';
+    
+    // Add loading indicator
+    const loader = document.createElement('div');
+    loader.className = 'loader';
+    loader.innerHTML = '<span class="loader-text">Loading...</span>';
+    loadingScreen.appendChild(loader);
+
+    document.body.appendChild(loadingScreen);
+    document.body.classList.add('loading');
+}
+
+function initializeMap(container) {
+    return new Promise((resolve, reject) => {
+        try {
+            // Clean up existing map if it exists
+            if (mapInstance) {
+                mapInstance.remove();
+                mapInstance = null;
+            }
+
+            // Clear the container
+            container.innerHTML = '';
+
+            // Create new map instance
+            mapInstance = L.map(container, {
                 center: [40.7128, -74.0060],
                 zoom: 13,
                 zoomControl: false,
@@ -19,48 +93,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 doubleClickZoom: false
             });
 
+            // Add tile layer
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
                 attribution: null,
                 maxZoom: 19
-            }).addTo(map).on('load', resolve);
+            }).addTo(mapInstance).on('load', () => {
+                setupMapFeatures(container);
+                resolve();
+            });
 
-            // Store map in global scope for other functions
-            window.map = map;
-        })
-    ];
-
-    // When all loading tasks complete
-    Promise.all(loadingTasks).then(() => {
-        // Remove loading screen
-        setTimeout(() => {
-            document.body.classList.remove('loading');
-            document.querySelector('.loading-screen').style.opacity = '0';
-            setTimeout(() => {
-                document.querySelector('.loading-screen').style.display = 'none';
-            }, 500);
-
-            // Initialize rest of the functionality
-            initializeMap();
-        }, 500);
+        } catch (error) {
+            console.error('Map initialization error:', error);
+            reject(error);
+        }
     });
+}
 
-    // Initialize map with a larger initial zoom to show more detail
-    const map = L.map('map', {
-        center: [40.7128, -74.0060],
-        zoom: 13,
-        zoomControl: false,
-        attributionControl: false,
-        dragging: false,
-        scrollWheelZoom: false,
-        touchZoom: false,
-        doubleClickZoom: false
-    });
-
-    // Add the map tiles with a more visible style
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: null,
-        maxZoom: 19
-    }).addTo(map);
+function setupMapFeatures(container) {
+    if (!mapInstance || mapInstance._removed) return;
 
     // Add animated location markers
     const locations = [
@@ -69,147 +119,389 @@ document.addEventListener('DOMContentLoaded', function() {
         { lat: 40.7082, lng: -74.0037, title: "Financial District" }
     ];
 
+    const markers = [];
+    const intervals = [];
+
     locations.forEach((loc, index) => {
         setTimeout(() => {
+            if (!mapInstance || mapInstance._removed) return;
+
             const marker = L.circle([loc.lat, loc.lng], {
                 color: '#2979FF',
                 fillColor: '#00E5FF',
                 fillOpacity: 0.5,
                 radius: 300
-            }).addTo(map);
+            }).addTo(mapInstance);
+
+            markers.push(marker);
 
             // Pulse animation
             function pulseMarker() {
+                if (!marker || !mapInstance || mapInstance._removed) return;
                 marker.setStyle({ radius: 300 });
                 setTimeout(() => {
+                    if (!marker || !mapInstance || mapInstance._removed) return;
                     marker.setStyle({ radius: 500 });
                     setTimeout(() => {
+                        if (!marker || !mapInstance || mapInstance._removed) return;
                         marker.setStyle({ radius: 300 });
                     }, 1000);
                 }, 1000);
             }
 
-            setInterval(pulseMarker, 2000);
+            const pulseInterval = setInterval(pulseMarker, 2000);
+            intervals.push(pulseInterval);
+
         }, index * 1000);
     });
 
-    // Make sure the map container is visible
-    const mapContainer = document.getElementById('map');
-    if (mapContainer) {
-        mapContainer.style.display = 'block';
-        mapContainer.style.animation = 'subtle-zoom 30s infinite alternate';
-    }
-
-    // Enhanced map animation with smoother transitions
+    // Setup map animation
     let direction = 1;
     function animateMap() {
-        const center = map.getCenter();
+        if (!mapInstance || mapInstance._removed) return;
+        
+        const center = mapInstance.getCenter();
         const newLat = center.lat + (0.0001 * direction);
         const newLng = center.lng + (0.0001 * direction);
         
-        map.panTo([newLat, newLng], {
+        mapInstance.panTo([newLat, newLng], {
             animate: true,
             duration: 15
         });
         
-        // Change direction periodically
         direction *= -1;
-        setTimeout(animateMap, 15000);
     }
 
-    // Start animations with delay
-    setTimeout(animateMap, 5000);
+    const animationInterval = setInterval(animateMap, 15000);
 
-    // Add scroll-based interactions
-    window.addEventListener('scroll', () => {
-        const scrolled = window.scrollY;
-        if (mapContainer) {
-            mapContainer.style.transform = `scale(${1 + scrolled * 0.0005})`;
+    // Setup scroll handler
+    const scrollHandler = () => {
+        if (!container || !mapInstance || mapInstance._removed) return;
+        requestAnimationFrame(() => {
+            const scrolled = window.scrollY;
+            container.style.transform = `scale(${1 + scrolled * 0.0005})`;
+        });
+    };
+
+    window.addEventListener('scroll', scrollHandler, { passive: true });
+
+    // Cleanup function
+    mapInstance.on('remove', () => {
+        intervals.forEach(clearInterval);
+        clearInterval(animationInterval);
+        window.removeEventListener('scroll', scrollHandler);
+        markers.forEach(marker => {
+            if (marker && mapInstance) {
+                marker.remove();
+            }
+        });
+    });
+
+    // Make map visible
+    requestAnimationFrame(() => {
+        if (container) {
+            container.style.display = 'block';
+            container.style.animation = 'subtle-zoom 30s infinite alternate';
         }
     });
 
     // Force a map refresh
     setTimeout(() => {
-        map.invalidateSize();
+        if (mapInstance && !mapInstance._removed) {
+            mapInstance.invalidateSize();
+        }
     }, 100);
+}
 
-    // Mobile Menu Functionality
-    const menuBtn = document.querySelector('.mobile-menu-btn');
-    const body = document.body;
-    const mobileMenuLinks = document.querySelectorAll('.mobile-menu-content a');
+function finishLoading() {
+    if (!loadingScreen) return;
 
-    if (menuBtn) {
-        menuBtn.addEventListener('click', () => {
-            body.classList.toggle('menu-open');
-        });
+    requestAnimationFrame(() => {
+        document.body.classList.remove('loading');
+        loadingScreen.style.opacity = '0';
+        
+        setTimeout(() => {
+            if (loadingScreen && loadingScreen.parentNode) {
+                loadingScreen.parentNode.removeChild(loadingScreen);
+                loadingScreen = null;
+            }
+        }, 500);
+    });
+}
 
-        // Close menu when clicking a link
-        mobileMenuLinks.forEach(link => {
-            link.addEventListener('click', () => {
-                body.classList.remove('menu-open');
-            });
-        });
+function handleLoadingError(error) {
+    console.error('Loading error:', error);
+    
+    // Clean up map if it failed
+    if (mapInstance) {
+        mapInstance.remove();
+        mapInstance = null;
     }
 
-    // Close menu when clicking outside
-    document.addEventListener('click', (e) => {
-        if (body.classList.contains('menu-open') && 
-            !e.target.closest('.mobile-menu-content') && 
-            !e.target.closest('.mobile-menu-btn')) {
-            body.classList.remove('menu-open');
+    // Remove loading screen
+    finishLoading();
+
+    // Show error to user
+    showErrorNotification('Failed to load the application. Please refresh the page.');
+}
+
+function showErrorNotification(message) {
+    const notification = document.createElement('div');
+    notification.className = 'notification error';
+    notification.style.position = 'fixed';
+    notification.style.top = '20px';
+    notification.style.right = '20px';
+    notification.style.padding = '15px';
+    notification.style.backgroundColor = '#ff3d00';
+    notification.style.color = 'white';
+    notification.style.borderRadius = '4px';
+    notification.style.zIndex = '10000';
+    notification.textContent = message;
+
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
         }
+    }, 5000);
+}
+
+// Mobile Menu Functionality
+const menuBtn = document.querySelector('.mobile-menu-btn');
+const body = document.body;
+const mobileMenuLinks = document.querySelectorAll('.mobile-menu-content a');
+
+if (menuBtn) {
+    menuBtn.addEventListener('click', () => {
+        body.classList.toggle('menu-open');
     });
 
-    // Add smooth scrolling to all navigation links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
+    // Close menu when clicking a link
+    mobileMenuLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            body.classList.remove('menu-open');
         });
     });
+}
 
-    // Initialize scroll animations
-    initScrollAnimations();
-
-    // Initialize testimonials carousel after DOM load
-    initTestimonialsCarousel();
-
-    // Initialize performance optimizations
-    initPerformanceOptimizations();
-
-    // Initialize form handling
-    initFormHandling();
-
-    // Initialize progressive image loading
-    initProgressiveImageLoading();
-
-    // Initialize keyboard navigation
-    initKeyboardNavigation();
-
-    // Initialize error boundary
-    initErrorBoundary();
-
-    // Initialize analytics dashboard immediately
-    initAnalyticsDashboard();
+// Close menu when clicking outside
+document.addEventListener('click', (e) => {
+    if (body.classList.contains('menu-open') && 
+        !e.target.closest('.mobile-menu-content') && 
+        !e.target.closest('.mobile-menu-btn')) {
+        body.classList.remove('menu-open');
+    }
 });
 
-// Separate map initialization function
-function initializeMap() {
-    // Move existing map-related code here
-    const locations = [
-        { lat: 40.7128, lng: -74.0060, title: "New York" },
-        { lat: 40.7142, lng: -74.0119, title: "Manhattan" },
-        { lat: 40.7082, lng: -74.0037, title: "Financial District" }
-    ];
+// Add smooth scrolling to all navigation links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    });
+});
 
-    // ... rest of the existing map code ...
-}
+// Initialize scroll animations
+initScrollAnimations();
+
+// Initialize testimonials carousel after DOM load
+initTestimonialsCarousel();
+
+// Initialize performance optimizations
+initPerformanceOptimizations();
+
+// Initialize form handling
+initFormHandling();
+
+// Initialize progressive image loading
+initProgressiveImageLoading();
+
+// Initialize keyboard navigation
+initKeyboardNavigation();
+
+// Initialize error boundary
+initErrorBoundary();
+
+// Initialize analytics dashboard immediately
+initAnalyticsDashboard();
+
+// Initialize tracking system
+const tracking = {
+    sessionId: null,
+
+    async init() {
+        // Set up performance observer
+        this.initPerformanceObserver();
+        
+        // Track initial page load
+        this.trackPageLoad();
+        
+        // Set up interaction tracking
+        this.initInteractionTracking();
+        
+        // Track form submissions
+        this.initFormTracking();
+    },
+
+    initPerformanceObserver() {
+        // Performance metrics tracking
+        const observer = new PerformanceObserver((list) => {
+            for (const entry of list.getEntries()) {
+                // Track only paint timing metrics
+                if (entry.entryType === 'paint') {
+                    this.trackPerformanceMetric(entry.name, entry.startTime);
+                }
+            }
+        });
+
+        observer.observe({ entryTypes: ['paint', 'largest-contentful-paint'] });
+
+        // Track page load metrics
+        window.addEventListener('load', () => {
+            const navigationEntry = performance.getEntriesByType('navigation')[0];
+            const metrics = {
+                pageUrl: window.location.pathname,
+                loadTime: navigationEntry.loadEventEnd,
+                domInteractiveTime: navigationEntry.domInteractive,
+                domCompleteTime: navigationEntry.domComplete,
+                firstPaintTime: performance.getEntriesByName('first-paint')[0]?.startTime,
+                firstContentfulPaintTime: performance.getEntriesByName('first-contentful-paint')[0]?.startTime
+            };
+
+            this.sendToServer('/api/track/performance', metrics);
+        });
+    },
+
+    initInteractionTracking() {
+        // Track clicks
+        document.addEventListener('click', (e) => {
+            const target = e.target;
+            this.trackInteraction('click', target);
+        });
+
+        // Track form field interactions
+        document.addEventListener('focus', (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                this.trackInteraction('focus', e.target);
+            }
+        }, true);
+
+        // Track scrolling
+        let scrollTimeout;
+        window.addEventListener('scroll', () => {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                const scrollDepth = Math.round((window.scrollY + window.innerHeight) / document.documentElement.scrollHeight * 100);
+                this.trackInteraction('scroll', null, { scrollDepth });
+            }, 150);
+        });
+
+        // Track page visibility changes
+        document.addEventListener('visibilitychange', () => {
+            this.trackInteraction('visibility_change', null, {
+                state: document.visibilityState
+            });
+        });
+    },
+
+    initFormTracking() {
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            // Track form field changes
+            form.addEventListener('input', (e) => {
+                if (e.target.type !== 'password') {
+                    this.trackInteraction('form_input', e.target, {
+                        fieldName: e.target.name,
+                        fieldType: e.target.type
+                    });
+                }
+            });
+
+            // Track form submissions
+            form.addEventListener('submit', (e) => {
+                this.trackInteraction('form_submit', e.target, {
+                    formId: e.target.id
+                });
+            });
+        });
+    },
+
+    trackPageLoad() {
+        const pageData = {
+            url: window.location.pathname,
+            referrer: document.referrer,
+            timestamp: new Date().toISOString()
+        };
+
+        this.trackInteraction('page_load', null, pageData);
+    },
+
+    trackInteraction(type, element, additionalData = {}) {
+        const interactionData = {
+            interactionType: type,
+            elementId: element?.id || null,
+            elementClass: element?.className || null,
+            elementText: element?.textContent?.trim() || null,
+            pageUrl: window.location.pathname,
+            timestamp: new Date().toISOString(),
+            ...additionalData
+        };
+
+        this.sendToServer('/api/track/interaction', interactionData);
+    },
+
+    trackPerformanceMetric(name, value) {
+        const metricData = {
+            pageUrl: window.location.pathname,
+            metricName: name,
+            metricValue: value,
+            timestamp: new Date().toISOString()
+        };
+
+        this.sendToServer('/api/track/performance', metricData);
+    },
+
+    async sendToServer(endpoint, data) {
+        try {
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+
+            if (this.sessionId) {
+                headers['X-Session-Id'] = this.sessionId;
+            }
+
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            // Store session ID from first response
+            if (!this.sessionId) {
+                this.sessionId = response.headers.get('X-Session-Id');
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Failed to send tracking data:', error);
+        }
+    }
+};
+
+// Initialize tracking
+tracking.init();
 
 // Scroll-based Animations
 function initScrollAnimations() {

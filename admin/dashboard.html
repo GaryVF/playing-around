@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>enroute.io Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-green: #2E7D32;
+            --light-green: #4CAF50;
+            --dark-green: #1B5E20;
+            --background: #121212;
+            --card-bg: #1E1E1E;
+            --text-primary: #FFFFFF;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: var(--card-bg);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+        }
+
+        .logout-button {
+            background: transparent;
+            border: 1px solid var(--primary-green);
+            color: var(--primary-green);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-button:hover {
+            background: var(--primary-green);
+            color: white;
+        }
+
+        .data-section {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .data-section h2 {
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .data-table th {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .data-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .refresh-button {
+            background: var(--primary-green);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-bottom: 1rem;
+        }
+
+        .refresh-button:hover {
+            background: var(--dark-green);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .error {
+            color: #f44336;
+            padding: 1rem;
+            background: rgba(244, 67, 54, 0.1);
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">enroute.io</div>
+        <nav class="nav-links">
+            <a href="#sessions" class="nav-link active" data-section="sessions">User Sessions</a>
+            <a href="#interactions" class="nav-link" data-section="interactions">User Interactions</a>
+            <a href="#forms" class="nav-link" data-section="forms">Form Submissions</a>
+            <a href="#errors" class="nav-link" data-section="errors">Error Logs</a>
+            <a href="#performance" class="nav-link" data-section="performance">Performance Metrics</a>
+        </nav>
+    </div>
+
+    <main class="main-content">
+        <header class="header">
+            <h1>Admin Dashboard</h1>
+            <button id="logoutButton" class="logout-button">Logout</button>
+        </header>
+
+        <div id="sessionsSection" class="data-section">
+            <h2>User Sessions</h2>
+            <button class="refresh-button" data-section="sessions">Refresh Data</button>
+            <div class="table-container"></div>
+        </div>
+
+        <div id="interactionsSection" class="data-section" style="display: none;">
+            <h2>User Interactions</h2>
+            <button class="refresh-button" data-section="interactions">Refresh Data</button>
+            <div class="table-container"></div>
+        </div>
+
+        <div id="formsSection" class="data-section" style="display: none;">
+            <h2>Form Submissions</h2>
+            <button class="refresh-button" data-section="forms">Refresh Data</button>
+            <div class="table-container"></div>
+        </div>
+
+        <div id="errorsSection" class="data-section" style="display: none;">
+            <h2>Error Logs</h2>
+            <button class="refresh-button" data-section="errors">Refresh Data</button>
+            <div class="table-container"></div>
+        </div>
+
+        <div id="performanceSection" class="data-section" style="display: none;">
+            <h2>Performance Metrics</h2>
+            <button class="refresh-button" data-section="performance">Refresh Data</button>
+            <div class="table-container"></div>
+        </div>
+    </main>
+
+    <script>
+        // Check authentication
+        if (!localStorage.getItem('adminToken')) {
+            window.location.href = '/admin.html';
+        }
+
+        // Navigation
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const section = e.target.dataset.section;
+                showSection(section);
+                loadData(section);
+            });
+        });
+
+        // Refresh buttons
+        document.querySelectorAll('.refresh-button').forEach(button => {
+            button.addEventListener('click', () => {
+                loadData(button.dataset.section);
+            });
+        });
+
+        // Logout
+        document.getElementById('logoutButton').addEventListener('click', () => {
+            localStorage.removeItem('adminToken');
+            window.location.href = '/admin.html';
+        });
+
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.data-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Show selected section
+            document.getElementById(`${sectionName}Section`).style.display = 'block';
+
+            // Update active nav link
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.dataset.section === sectionName) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        async function loadData(section) {
+            const container = document.querySelector(`#${section}Section .table-container`);
+            container.innerHTML = '<div class="loading">Loading...</div>';
+
+            try {
+                const response = await fetch(`/api/admin/data/${section}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch data');
+                }
+
+                const data = await response.json();
+                renderTable(section, data, container);
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="error">
+                        Failed to load data: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function renderTable(section, data, container) {
+            if (!data || data.length === 0) {
+                container.innerHTML = '<div class="loading">No data available</div>';
+                return;
+            }
+
+            const columns = Object.keys(data[0]);
+            const table = document.createElement('table');
+            table.className = 'data-table';
+
+            // Header
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            columns.forEach(column => {
+                const th = document.createElement('th');
+                th.textContent = formatColumnName(column);
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+
+            // Body
+            const tbody = document.createElement('tbody');
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                columns.forEach(column => {
+                    const td = document.createElement('td');
+                    td.textContent = formatValue(row[column]);
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+            table.appendChild(tbody);
+
+            container.innerHTML = '';
+            container.appendChild(table);
+        }
+
+        function formatColumnName(name) {
+            return name
+                .split('_')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
+        }
+
+        function formatValue(value) {
+            if (value === null || value === undefined) return '-';
+            if (typeof value === 'object') return JSON.stringify(value);
+            if (value.length > 100) return value.substring(0, 100) + '...';
+            return value;
+        }
+
+        // Load initial data
+        loadData('sessions');
+    </script>
+</body>
+</html> 
